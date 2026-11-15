@@ -119,7 +119,7 @@ Sind `BRING_EMAIL` und `BRING_PASSWORD` gesetzt, zeigt die Einkaufsliste den But
 - **Preis-API nicht erreichbar:** zuerst frischer Disk-Cache, dann Live-API, dann veraltete Cache-Werte,
   zuletzt eine Kurzliste mit Richtpreisen (`lib/migros/fallback-prices.ts`). Betroffene Zeilen sind in der
   UI als *Schätzung* bzw. *Schätzpreis* markiert, dazu erscheint ein Hinweis.
-- **Cache:** `data/cache/*.json` (Produkte, Preissuche) – 12 Stunden gültig, gitignored.
+- **Cache:** `data/cache/*.json` (Produkte, Preissuche) – 7 Tage (1 Woche) gültig, gitignored.
 - **Rezept-Cache:** Next.js Cache Components (`use cache` + `cacheLife`/`cacheTag`).
 - **Pläne:** liegen im Browser (`localStorage`), inklusive abgehakter Einkaufslisten-Positionen.
 
@@ -190,7 +190,7 @@ in das Projektverzeichnis gelegt – es gibt also keine Docker-Volumes:
 
 | Host (neben `docker-compose.yml`) | Im Container | Inhalt |
 | --- | --- | --- |
-| `./data` | `/app/data` | Migros-Produkte/-Preise (`data/cache/*.json`, 12 h TTL) – dasselbe Verzeichnis, das `npm run dev` nutzt |
+| `./data` | `/app/data` | Migros-Produkte/-Preise (`data/cache/*.json`, 7 d TTL) – dasselbe Verzeichnis, das `npm run dev` nutzt |
 | `./next-cache` | `/app/.next/cache` | Next.js-Server-Cache (`use cache`, ISR) – bewusst getrennt vom lokalen `.next/` |
 
 **Rechte (Linux):** Bind-Mounts bekommen von Docker **nicht** die Rechte aus dem Image, sondern es gelten

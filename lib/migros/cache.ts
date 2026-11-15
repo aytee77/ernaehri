@@ -5,7 +5,8 @@ import type { MigrosProduct } from "./types";
 const CACHE_DIR = path.join(process.cwd(), "data", "cache");
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const SEARCH_FILE = path.join(CACHE_DIR, "product-search.json");
-const TTL_MS = 12 * 60 * 60 * 1000;
+/** Migros product/price cache: refetch at most once a week. */
+const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface CacheEntry {
   product: MigrosProduct;

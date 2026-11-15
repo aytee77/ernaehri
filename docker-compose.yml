@@ -30,7 +30,7 @@ services:
       - path: .env.local
         required: false
     volumes:
-      # Migros product/price cache (12 h TTL). This is the same host directory
+      # Migros product/price cache (1 week TTL). This is the same host directory
       # that `npm run dev` writes to, so dev and container share one cache.
       - ./data:/app/data
       # Next.js server cache (`use cache`, cacheLife) – keeps generated weeks
