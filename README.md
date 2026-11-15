@@ -148,7 +148,7 @@ Assets und `public/` – kein `node_modules`, keine Quelldateien.
 
 ```bash
 docker build -t ernaehri .
-docker run --rm -p 3000:3000 -v ernaehri-data:/app/data ernaehri   # → http://localhost:3000
+docker run --rm -p 3000:3000 -v ./data:/app/data ernaehri   # → http://localhost:3000
 ```
 
 Oder über Compose (baut lokal oder nutzt das veröffentlichte Image):
@@ -165,7 +165,7 @@ docker compose pull && docker compose up    # ghcr.io/aytee77/ernaehri:latest
 Container Registry:
 
 ```bash
-docker run --rm -p 3000:3000 -v ernaehri-data:/app/data ghcr.io/aytee77/ernaehri:latest
+docker run --rm -p 3000:3000 -v ./data:/app/data ghcr.io/aytee77/ernaehri:latest
 ```
 
 Tags: `latest` (Standardbranch), `master`, `sha-<kurz>` sowie `{{version}}` und `{{major}}.{{minor}}`,
@@ -185,16 +185,34 @@ docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/aytee77/ernaehri:late
 
 ### Laufzeit-Daten & Neustarts
 
-Zwei Pfade schreibt der Container zur Laufzeit:
+Zwei Pfade schreibt der Container zur Laufzeit; beide sind in `docker-compose.yml` als **Bind-Mounts**
+in das Projektverzeichnis gelegt – es gibt also keine Docker-Volumes:
 
-| Pfad | Inhalt | Ohne Volume |
+| Host (neben `docker-compose.yml`) | Im Container | Inhalt |
 | --- | --- | --- |
-| `/app/data/cache` | Migros-Produkte/-Preise (12 h TTL) | wird pro Neustart neu gefüllt |
-| `/app/.next/cache` | Next.js-Server-Cache (`use cache`, ISR) | Warmstart entfällt, Inhalte werden neu geladen |
+| `./data` | `/app/data` | Migros-Produkte/-Preise (`data/cache/*.json`, 12 h TTL) – dasselbe Verzeichnis, das `npm run dev` nutzt |
+| `./next-cache` | `/app/.next/cache` | Next.js-Server-Cache (`use cache`, ISR) – bewusst getrennt vom lokalen `.next/` |
 
-Beide Verzeichnisse sind für den Container-Nutzer beschreibbar (`VOLUME /app/data`). Ohne Volume läuft
-die App weiter, nur ohne warmen Cache. Die Pläne selbst liegen im Browser (`localStorage`), der
-Container ist daher zustandslos.
+**Rechte (Linux):** Bind-Mounts bekommen von Docker **nicht** die Rechte aus dem Image, sondern es gelten
+die Rechte des Host-Verzeichnisses. Der Container läuft als `uid/gid 1001`, deshalb vor dem ersten Start:
+
+```bash
+mkdir -p data/cache next-cache
+sudo chown -R 1001:1001 data next-cache
+```
+
+Auf Docker Desktop (Windows/macOS) ist der Zugriff über die Ordnerfreigabe geregelt und meist permissiv;
+dort entstehen die Verzeichnisse beim ersten Start automatisch. Mit SELinux (RHEL/Fedora) zusätzlich `:Z`
+anhängen, z. B. `- ./data:/app/data:Z`.
+
+Die Daten liegen damit als normale Dateien im Projektordner (`data/cache/products.json`), sind direkt
+sicherbar und wandern zusammen mit der Compose-Datei auf einen anderen Server. `docker compose down`
+lässt sie stehen; `docker compose down -v` greift nicht mehr, weil keine Volumes existieren.
+
+Braucht der Container die Verzeichnisse nicht, kann man die Mounts auch weglassen: `lib/migros/cache.ts`
+verschluckt Schreibfehler bewusst und Next.js legt seinen Cache neu an – es fehlt dann nur der warme Cache.
+Ein reines `docker run` ohne `-v` persistiert nichts; das Image deklariert bewusst kein `VOLUME`. Die
+Pläne selbst liegen im Browser (`localStorage`), der Container ist daher zustandslos.
 
 ### Betriebshinweise
 

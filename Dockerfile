@@ -45,9 +45,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Two paths the app writes to at runtime:
 #   .next/cache  → Next.js server cache (`use cache`, cacheLife) and ISR
 #   data/cache   → Migros product/price cache (lib/migros/cache.ts)
+# Both are created and owned by the runtime user here so that bind-mounted host
+# directories (see docker-compose.yml) are writable by uid/gid 1001.
+# Deliberately no VOLUME instruction: persistence is the caller's decision, and
+# declaring one would spawn throwaway anonymous volumes for plain `docker run`.
 RUN mkdir -p /app/.next/cache /app/data/cache \
     && chown -R nextjs:nodejs /app/.next /app/data
-VOLUME ["/app/data"]
 
 USER nextjs
 EXPOSE 3000

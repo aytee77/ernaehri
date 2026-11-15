@@ -5,6 +5,15 @@
 #
 # Images published by .github/workflows/docker-publish.yml live at
 #   ghcr.io/aytee77/ernaehri:latest
+#
+# Runtime data lives in ./data and ./next-cache next to this file (plain bind
+# mounts, no Docker volumes). The container runs as uid/gid 1001, and bind mounts
+# get no ownership fix-up, so on Linux those directories must be writable by 1001:
+#
+#   mkdir -p data/cache next-cache && sudo chown -R 1001:1001 data next-cache
+#
+# On Docker Desktop (Windows/macOS) the mapped permissions are permissive, so the
+# directories are created automatically on first start.
 
 services:
   ernaehri:
@@ -21,10 +30,13 @@ services:
       - path: .env.local
         required: false
     volumes:
-      # Migros product/price cache (12 h TTL)
-      - ernaehri-data:/app/data
-      # Next.js server cache (`use cache`, cacheLife) – keeps generated weeks warm
-      - ernaehri-next-cache:/app/.next/cache
+      # Migros product/price cache (12 h TTL). This is the same host directory
+      # that `npm run dev` writes to, so dev and container share one cache.
+      - ./data:/app/data
+      # Next.js server cache (`use cache`, cacheLife) – keeps generated weeks
+      # warm. A separate host directory on purpose: pointing this at the local
+      # `.next/` would mix the dev build's cache into the container.
+      - ./next-cache:/app/.next/cache
     healthcheck:
       test:
         [
@@ -37,7 +49,3 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
-
-volumes:
-  ernaehri-data:
-  ernaehri-next-cache:

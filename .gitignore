@@ -45,6 +45,8 @@ next-env.d.ts
 
 # runtime caches (Migros product prices, Migusto recipes)
 /data/cache/
+# Next.js server cache, bind-mounted to /app/.next/cache by docker-compose.yml
+/next-cache/
 
 # playwright traces from local verification runs
 /.playwright-mcp/

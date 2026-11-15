@@ -7,8 +7,9 @@ node_modules
 .github
 .idea
 
-# Runtime caches (rebuilt inside the container)
-data/cache
+# Runtime caches – bind-mounted from ./data and ./next-cache by docker-compose.yml
+data
+next-cache
 
 # Local secrets – never copied into the image
 .env*
