@@ -1,0 +1,23 @@
+# Dependencies and build output
+node_modules
+.next
+
+# Version control, CI and editor metadata
+.git
+.github
+.idea
+
+# Runtime caches (rebuilt inside the container)
+data/cache
+
+# Local secrets – never copied into the image
+.env*
+!.env.example
+
+# TypeScript / Next.js generated files
+*.tsbuildinfo
+next-env.d.ts
+
+# Docs
+README.md
+AGENTS.md

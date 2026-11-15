@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# IDE
+.idea/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -39,3 +42,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# runtime caches (Migros product prices, Migusto recipes)
+/data/cache/
+
+# playwright traces from local verification runs
+/.playwright-mcp/
+
+# keep the env template committable (real env files stay ignored by `.env*` above)
+!.env.example
+

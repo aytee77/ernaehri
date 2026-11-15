@@ -1,0 +1,43 @@
+# Local runs and self-hosting of the published image.
+#
+#   docker compose up --build                     # build from the local sources
+#   docker compose pull && docker compose up      # use the ghcr.io image
+#
+# Images published by .github/workflows/docker-publish.yml live at
+#   ghcr.io/aytee77/ernaehri:latest
+
+services:
+  ernaehri:
+    build:
+      context: .
+    image: ghcr.io/aytee77/ernaehri:latest
+    container_name: ernaehri
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # Every variable is optional: without them the app runs on its public
+    # defaults (Migros/Migusto client keys) and the Bring! export stays off.
+    env_file:
+      - path: .env.local
+        required: false
+    volumes:
+      # Migros product/price cache (12 h TTL)
+      - ernaehri-data:/app/data
+      # Next.js server cache (`use cache`, cacheLife) – keeps generated weeks warm
+      - ernaehri-next-cache:/app/.next/cache
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  ernaehri-data:
+  ernaehri-next-cache:
